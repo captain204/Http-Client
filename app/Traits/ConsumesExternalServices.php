@@ -13,10 +13,11 @@ trait ConsumesExternalServices
     $formsParams=[], $headers=[])
     {
         $client = new Client([
-            'base_uri'=>$this->baseUri,
+            'base_uri' => $this->baseUri,
         ]);
+
         if(method_exists($this, 'resolveAuthorization')){
-            $this->resolveAuthorization($queryParams,$formsParams,$formsParams);
+            $this->resolveAuthorization($queryParams,$formsParams,$headers);
         }
         $response = $client->request($method, $requestUrl,[
             'query' => $queryParams,
@@ -27,7 +28,7 @@ trait ConsumesExternalServices
         $response = $response->getBody()->getContents();
 
         if(method_exists($this,'decodeResponse')){
-            $this->decodeResponse($response);
+           $response = $this->decodeResponse($response);
         }
 
         if(method_exists($this, 'checkIfErrorResponse')){

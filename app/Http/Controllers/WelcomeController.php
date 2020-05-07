@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+#use App\Services\MarketService;
 
 use Illuminate\Http\Request;
 
@@ -11,19 +12,18 @@ class WelcomeController extends Controller
      *
      * @return void
      */
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
+   
     /**
      * Show the application dashboard.
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function showWelcomePage()
-    {
-        return view('welcome');
+    {   
+        $products = $this->marketService->getProducts();
+        $categories = $this->marketService->getCategories();
+        return view('welcome')->with(['products'=>$products,'categories'=>$categories,]);
+        #dd($products);
     }
 }
 
