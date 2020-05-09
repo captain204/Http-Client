@@ -4,7 +4,7 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
-
+use GuzzleHttp\Exception\ClientException;
 class Handler extends ExceptionHandler
 {
     /**
@@ -48,8 +48,43 @@ class Handler extends ExceptionHandler
      *
      * @throws \Throwable
      */
-    public function render($request, Throwable $exception)
+    public function render($request, Exception $exception)
     {
+        if ($exception instanceof ClientException) {
+            return $this->handleClientException($exception, $request);
+        }
+
         return parent::render($request, $exception);
     }
+
+    /**
+     * Handle correctly the exceptions when sending requests
+     * @return \Illuminate\Http\Response
+     */
+    protected function handleClientException($exception, $request)
+    {
+        $code = $exception->getCode();
+
+        $response = json_decode($exception->getResponse()->getBody()->getContents());
+        $errorMessage = $response->error;
+
+        switch ($code) {
+            case Response::HTTP_UNAUTHORIZED:
+                $request->session()->invalidate();
+
+                if ($request->user()) {
+                    Auth::logout();
+
+                    return redirect()
+                        ->route('welcome')
+                        ->withErrors(['message' => 'The authentication failed. Please login again.']);
+                }
+
+                abort(500, 'Error authenticating the request. Try again later.');
+
+            default:
+                return redirect()->back()->withErrors(['message' => $errorMessage]);
+        }
+    }
+
 }

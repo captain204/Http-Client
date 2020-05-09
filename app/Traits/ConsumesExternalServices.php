@@ -1,46 +1,55 @@
-<?php 
+<?php
+
 namespace App\Traits;
+
 use GuzzleHttp\Client;
 
 trait ConsumesExternalServices
 {
     /**
      * Send a request to any service
-     * [Make request description]
-     * @return stdClass/string
-    */
-    public function makeRequest($method, $requestUrl, $queryParams=[], 
-    $formsParams=[], $headers=[])
+     * @return sdtClass|string
+     */
+    public function makeRequest($method, $requestUrl, $queryParams = [], $formParams = [], $headers = [], $hasFile = false)
     {
         $client = new Client([
             'base_uri' => $this->baseUri,
         ]);
 
-        if(method_exists($this, 'resolveAuthorization')){
-            $this->resolveAuthorization($queryParams,$formsParams,$headers);
+        if (method_exists($this, 'resolveAuthorization')) {
+            $this->resolveAuthorization($queryParams, $formParams, $headers);
         }
-        $response = $client->request($method, $requestUrl,[
+
+        $bodyType = 'form_params';
+
+        if ($hasFile) {
+            $bodyType = 'multipart';
+
+            $multipart = [];
+
+            foreach ($formParams as $name => $contents) {
+                $multipart[] = ['name' => $name, 'contents' => $contents];
+            }
+        }
+
+        $response = $client->request($method, $requestUrl, [
             'query' => $queryParams,
-            'form_param'=> $formsParams,
-            'headers'=>$headers
+            $bodyType => $hasFile ? $multipart : $formParams,
+            'headers' => $headers,
         ]);
 
         $response = $response->getBody()->getContents();
 
-        if(method_exists($this,'decodeResponse')){
-           $response = $this->decodeResponse($response);
+        if (method_exists($this, 'decodeResponse')) {
+            $response = $this->decodeResponse($response);
         }
 
-        if(method_exists($this, 'checkIfErrorResponse')){
+        if (method_exists($this, 'checkIfErrorResponse')) {
             $this->checkIfErrorResponse($response);
         }
 
         return $response;
-
     }
-
-
-
 }
 
 ?>

@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
@@ -14,14 +14,14 @@
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet" type="text/css">
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 </head>
 <body>
     <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
+        <nav class="navbar navbar-expand-md navbar-light navbar-laravel">
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
                     {{ config('app.name', 'Laravel') }}
@@ -33,7 +33,17 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav mr-auto">
-
+                        <li class="nav-item">
+                            <a class="btn btn-success" href="{{route('products.publish')}}">Publish</a>
+                        </li>
+                        @auth
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{route('purchases')}}">Purchases</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{route('products')}}">Products</a>
+                            </li>
+                        @endauth
                     </ul>
 
                     <!-- Right Side Of Navbar -->
@@ -71,39 +81,28 @@
                 </div>
             </div>
         </nav>
-        @if(isset($errors)&&$errors->any())
-            <div>
-                <button class="close" type="button" data-dismiss="alert alert-danger"
-                aria-hidden="true">&times;</button>
-            </div>
+
+        @if(isset($errors) && $errors->any())
+        <div class="alert alert-danger">
+            <button class="close" type="button" data-dismiss="alert" aria-hidden="true">&times;</button>
             <ul>
-                @foreach ($errors->all as $error)
-                <li>{{$error}}<li>
+                @foreach($errors->all() as $error)
+                <li>{{$error}}</li>
                 @endforeach
             </ul>
+        </div>
         @endif
-        @if(session()->has('session'))
-            <div>
-                <button class="close" type="button" data-dismiss="alert"
-                aria-hidden="true">&times;</button>
-            </div>
+
+        @if(session()->has('success'))
+        <div class="alert alert-success">
+            <button class="close" type="button" data-dismiss="alert" aria-hidden="true">&times;</button>
             <ul>
-                @foreach ($session->get('success') as $message)
-                <li>{{$message}}<li>
+                @foreach(session()->get('success') as $message)
+                <li>{{$message}}</li>
                 @endforeach
             </ul>
+        </div>
         @endif
-
-
-
-
-
-
-
-
-
-
-
 
         <main class="py-4">
             @yield('content')
